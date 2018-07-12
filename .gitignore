@@ -24,7 +24,6 @@
 /nbdist/
 /.nb-gradle/
 
-build
 out
 logs
 .DS_Store
