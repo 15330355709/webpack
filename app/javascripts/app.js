@@ -16,10 +16,9 @@ var MetaCoin = contract(metacoin_artifacts)
 // For application bootstrapping, check out window.addEventListener below.
 var accounts
 var account
-var $ = require('jquery/src/core');
-require('jquery/src/ajax');
-require('jquery/src/ajax/xhr');
-
+var $ = require('jquery/src/core')
+require('jquery/src/ajax')
+require('jquery/src/ajax/xhr')
 
 window.App = {
   start: function () {
@@ -80,14 +79,51 @@ window.App = {
     MetaCoin.deployed().then(function (instance) {
       meta = instance
       return meta.sendCoin(receiver, amount, { from: account })
-    }).then(function () {
-      self.setStatus('Transaction complete!')
+    }).then(function (result) {
+      //self.setStatus(result)
+      self.setStatus('Transaction complete!' + result.tx)
       self.refreshBalance()
+      var sid = document.getElementById('id').value
+      App.sendTx(sid, result.tx, '1010101010', 0.1, 1, 1, 1)
     }).catch(function (e) {
       console.log(e)
       self.setStatus('Error sending coin; see log.')
     })
+  },
+
+  /**
+   * 向后端发送交易
+   * @param sid
+   * @param txhash
+   * @param userKey
+   * @param amount
+   * @param period
+   * @param txType
+   * @param gameId
+   */
+  sendTx: function (sid, txhash, userKey, amount, period, txType, gameId) {
+    //var sid = document.getElementById('id').value
+    $.ajax({
+      type: 'POST',
+      contentType: 'application/json;charset=UTF-8',
+      url: 'http://localhost:8081/webservice/grow/vegetable',
+      data: JSON.stringify({
+        'txHash': txhash,
+        'period': period,
+        'amount': amount,
+        'userKey': userKey,
+        'sid': sid,
+        'txType': txType,
+        'gameId': gameId
+      }),
+      success: function (data) {
+      },
+      // 调用出错执行的函数
+      error: function () {
+      }
+    })
   }
+
 }
 window.WS = {
   websocket: null,
@@ -125,13 +161,6 @@ window.WS = {
     window.onbeforeunload = function () {
       WS.closeWebSocket()
     }
-    //WS.bindEvents()// 绑定事件
-  },
-
-  bindEvents: function () {
-    // $(document).on('click', '#send', WS.send)
-    // $(document).on('click', '#close', WS.closeWebSocket)
-    // $(document).on('click', '#sendAjax', WS.sendAjax)
   },
   // 发送消息函数
   send: function () {
@@ -162,7 +191,7 @@ window.WS = {
       // 调用出错执行的函数
       error: function () {
       }
-    });
+    })
   },
   // 将消息显示在网页上
   setMessageInnerHTML: function (innerHTML) {
@@ -178,7 +207,7 @@ window.WS = {
     document.getElementById('id').value = userID
   }
 
-};
+}
 
 window.addEventListener('load', function () {
   // Checking if Web3 has been injected by the browser (Mist/MetaMask)
@@ -192,8 +221,8 @@ window.addEventListener('load', function () {
     window.web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:9545'))
   }
 
-  App.start();
-  WS.init();
+  App.start()
+  WS.init()
   //WS.bindEvents()// 绑定事件
 
-});
+})
