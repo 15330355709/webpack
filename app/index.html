@@ -10,12 +10,7 @@
 <div>
   Welcome<br/>消息:<input id="text" type="text"/><br/>
   用户id:<input id="id" type="text"/><br/>
-  <button id="send" onclick="WS.send()">发送消息</button>
-  <hr/>
-  <button id="close" onclick="WS.closeWebSocket()">关闭WebSocket连接</button>
-  <br/>
-  <button id="sendAjax" onclick="WS.sendAjax()">发送ajax</button>
-  <hr/>
+    <br/>
   <div id="message"></div>
 </div>
 
@@ -32,5 +27,18 @@
   <span id="status"></span>
   <br>
   <span class="hint"><strong>Hint:</strong> open the browser developer console to view any errors and warnings.</span>
+
+    <br>
+    <br>
+    <h1>Game</h1>
+    <br><label for="period">period:</label><input type="text" id="period" placeholder="e.g., 1"></input>
+    <br><label for="origin">origin:</label><input type="text" id="origin" placeholder="e.g., 1000000000000000"></input>
+    <br><br><button id="button1" onclick="App.startGame()">开始</button>
+    <br><br><button id="button2" onclick="App.play()">种菜</button>
+    <br><br><button id="button3" onclick="App.commitOrigin()">施肥</button>
+    <br><br><button id="button4" onclick="App.open()">开奖</button>
+    <br><br>
+    <br>
+    <span class="hint"><strong>Hint:</strong> open the browser developer console to view any errors and warnings.</span>
 </body>
 </html>

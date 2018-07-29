@@ -7,9 +7,11 @@ import { default as contract } from 'truffle-contract'
 
 // Import our contract artifacts and turn them into usable abstractions.
 import metacoin_artifacts from '../../build/contracts/MetaCoin.json'
+import game_artifacts from  '../../build/contracts/Game.json'
 
 // MetaCoin is our usable abstraction, which we'll use through the code below.
 var MetaCoin = contract(metacoin_artifacts)
+var Game = contract(game_artifacts);
 
 // The following code is simple to show off interacting with your contracts.
 // As your needs grow you will likely need to change its form and structure.
@@ -25,7 +27,8 @@ window.App = {
     var self = this
 
     // Bootstrap the MetaCoin abstraction for Use.
-    MetaCoin.setProvider(web3.currentProvider)
+    MetaCoin.setProvider(web3.currentProvider);
+    Game.setProvider(web3.currentProvider);
 
     // Get the initial account balance so it can be displayed.
     web3.eth.getAccounts(function (err, accs) {
@@ -42,7 +45,11 @@ window.App = {
       accounts = accs
       account = accounts[0]
 
-      self.refreshBalance()
+      self.refreshBalance();
+      document.getElementById('period').value = '1';
+      document.getElementById('origin').value = '0x0000000000000000000000000000000000000000000000000000000000000064';
+
+
     })
   },
 
@@ -80,47 +87,85 @@ window.App = {
       meta = instance
       return meta.sendCoin(receiver, amount, { from: account })
     }).then(function (result) {
-      //self.setStatus(result)
+      self.setStatus(result)
       self.setStatus('Transaction complete!' + result.tx)
       self.refreshBalance()
       var sid = document.getElementById('id').value
-      App.sendTx(sid, result.tx, '1010101010', 0.1, 1, 1, 1)
+      App.sendTx(sid, result.tx,account, '1010101010', 0.1, 1, 1, 1)
     }).catch(function (e) {
       console.log(e)
       self.setStatus('Error sending coin; see log.')
     })
   },
+  startGame: function () {
+    var self = this
+    var period = parseInt(document.getElementById('period').value);
+    var origin = parseInt(document.getElementById('origin').value);
+    var hash = web3.sha3(origin);
 
-  /**
-   * 向后端发送交易
-   * @param sid
-   * @param txhash
-   * @param userKey
-   * @param amount
-   * @param period
-   * @param txType
-   * @param gameId
-   */
-  sendTx: function (sid, txhash, userKey, amount, period, txType, gameId) {
-    //var sid = document.getElementById('id').value
-    $.ajax({
-      type: 'POST',
-      contentType: 'application/json;charset=UTF-8',
-      url: 'http://localhost:8081/webservice/grow/vegetable',
-      data: JSON.stringify({
-        'txHash': txhash,
-        'period': period,
-        'amount': amount,
-        'userKey': userKey,
-        'sid': sid,
-        'txType': txType,
-        'gameId': gameId
-      }),
-      success: function (data) {
-      },
-      // 调用出错执行的函数
-      error: function () {
-      }
+    this.setStatus('Initiating transaction... (please wait) hash:'+hash+'origin:'+origin)
+
+    var game
+    Game.deployed().then(function (instance) {
+      //var value = web3.toWei('10', 'ether');
+      game = instance
+      return game.startGame(1,2,100,100,50, { from: account,gas:3000000})
+    }).then(function (result) {
+      self.setStatus('Transaction complete!' + result.tx)
+      self.refreshBalance()
+    }).catch(function (e) {
+      console.log(e)
+      self.setStatus('Error sending coin; see log.')
+    })
+  },
+  open: function () {
+    var self = this
+    var period = parseInt(document.getElementById('period').value);
+    var game
+    Game.deployed().then(function (instance) {
+      game = instance
+      return game.open(period, { from: account,gas:3000000 })
+    }).then(function (result) {
+      self.setStatus('Transaction complete!' + result.tx)
+      self.refreshBalance()
+    }).catch(function (e) {
+      console.log(e)
+      self.setStatus('Error sending coin; see log.')
+    })
+  },
+  play: function () {
+    var self = this
+    var period = parseInt(document.getElementById('period').value);
+    var origin = document.getElementById('origin').value;
+    var hash = web3.sha3(origin,{encoding: 'hex'});
+    this.setStatus('Initiating transaction... (please wait) hash:'+hash+'origin:'+origin)
+    var game
+    Game.deployed().then(function (instance) {
+      var value = web3.toWei('10', 'ether');
+      game = instance
+      return game.play(period, hash, { from: account,value:value,gas:300000})
+    }).then(function (result) {
+      self.setStatus('Transaction complete!' + result.tx)
+      self.refreshBalance()
+    }).catch(function (e) {
+      console.log(e)
+      self.setStatus('Error sending coin; see log.')
+    })
+  },
+  commitOrigin: function () {
+    var self = this
+    var period = parseInt(document.getElementById('period').value);
+    var origin = document.getElementById('origin').value;
+    var game
+    Game.deployed().then(function (instance) {
+      game = instance
+      return game.commitOrigin(period, origin, { from: account,gas:300000})
+    }).then(function (result) {
+      self.setStatus('Transaction complete!' )
+      self.refreshBalance()
+    }).catch(function (e) {
+      console.log(e)
+      self.setStatus('Error sending coin; see log.')
     })
   }
 
